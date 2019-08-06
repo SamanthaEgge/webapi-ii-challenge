@@ -52,12 +52,12 @@ router.post("/", (request, response) => {
 
 // modify a post by id
 router.put("/:id", (request, response) => {
-  const { name, bio } = request.body;
+  const { title, contents } = request.body;
   const id = request.params.id;
 
-  if (!name || !bio) {
+  if (!title || !contents) {
     response.status(400).send({
-      errorMessage: "Please provide name and bio for the user."
+      errorMessage: "Please provide title and contents for the user."
     });
   } else {
     db.update(id, request.body)
@@ -110,9 +110,33 @@ router.get("/:id/comments", (request, response) => {
 });
 
 // create a comment on a post
-router.post('/:id/comments', (request, response) => {
+router.post("/:id/comments", (request, response) => {
+  const { text } = request.body;
+  const id = request.params.id
 
-})
+  if (!text) {
+    response.status(400).send({
+      errorMessage: "Please provide text content for this comment."
+    });
+  } else {
+    db.findById(id)
+    .then(post => {
+      console.log(id)
+      console.log(request.body)
+      console.log(post)
+     db.insertComment(request.body)
+      .then(comment => {
+        response.status(201).json(comment)
+      })
+      .catch(error => {
+        response.status(500).json({ message: 'error creating new comment'})
+      })
+    })
+    .catch(error => {
+      response.status(404).json({ message: 'The post with the specified ID does not exist.' })
+    })
+  }
+});
 
 
 // export default router
