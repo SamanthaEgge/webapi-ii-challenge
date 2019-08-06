@@ -10,7 +10,7 @@ router.get('/', (request, response) => {
       response.status(200).json(posts)
     })
     .catch(error => {
-      response.status(500).json({ message: 'error getting list of the users'})
+      response.status(500).json({ message: 'Error getting list of the posts'})
     })
 })
 
@@ -18,33 +18,34 @@ router.get('/', (request, response) => {
 router.get("/:id", (request, response) => {
   const id = request.params.id;
   db.findById(id)
-    .then(user => {
-      if (user) {
-        response.status(200).json(user)
+    .then(post => {
+      if (post) {
+        response.status(200).json(post)
       } else {
-        response.status(404).json({ message: 'user not found' })
+        response.status(404).json({ message: 'post not found' })
       }
     })
     .catch(error => {
-      response.status(500).json({ message: 'error fetching user'})
+      console.log('get post by id catch error', error)
+      response.status(500).json({ message: 'error fetching post'})
     })
 });
 
 // create a new post
 router.post("/", (request, response) => {
-  const { name, bio } = request.body;
+  const { title, contents } = request.body;
 
-  if (!name || !bio) {
+  if (!title || !contents) {
     response.status(400).send({
-      errorMessage: "Please provide name and bio for the user."
+      errorMessage: "Please provide title and contents for the user."
     });
   } else {
     db.insert(request.body)
-      .then(user => {
-        response.status(201).json(user)
+      .then(post => {
+        response.status(201).json(post)
       })
       .catch(error => {
-        response.status(500).json({ message: 'error creating new user'})
+        response.status(500).json({ message: 'error creating new post'})
       })
   }
 });
@@ -91,6 +92,27 @@ router.delete("/:id", async (request, response) => {
 });
 
 ////// COMMENTS SECTION
+// get a post's comments
+router.get("/:id/comments", (request, response) => {
+  const id = request.params.id;
+  db.findPostComments(id)
+    .then(post => {
+      if (post) {
+        response.status(200).json(post)
+      } else {
+        response.status(404).json({ message: 'The post with the specified ID does not exist.' })
+      }
+    })
+    .catch(error => {
+      console.log('get post by id catch error', error)
+      response.status(500).json({ message: 'error fetching post'})
+    })
+});
+
+// create a comment on a post
+router.post('/:id/comments', (request, response) => {
+
+})
 
 
 // export default router
