@@ -10,3 +10,5 @@ server.use(express.json())
 server.use('/api/posts', blogRouter)
 
 server.listen(8000, () => console.log('\nAPI running \n'))
+
+// kick over you idiot

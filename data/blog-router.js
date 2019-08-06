@@ -61,15 +61,15 @@ router.put("/:id", (request, response) => {
     });
   } else {
     db.update(id, request.body)
-      .then(user => {
-        if (user) {
-          response.status(200).json(user)
+      .then(post => {
+        if (post) {
+          response.status(200).json(post)
         } else {
-          response.status(404).json({ message: 'user not found' })
+          response.status(404).json({ message: 'post not found' })
         } 
       })
       .catch(error => {
-        response.status(500).json({ message: 'error creating new user'})
+        response.status(500).json({ message: 'error creating new post'})
       })
   }
 });
@@ -77,17 +77,16 @@ router.put("/:id", (request, response) => {
 // delete a post by id
 router.delete("/:id", async (request, response) => {
   const id = request.params.id;
-
   db.remove(id)
-    .then(user => {
-      if (user) {
-        response.status(200).json(user)
+    .then(post => {
+      if (post) {
+        response.status(200).json(post)
       } else {
-        response.status(404).json({ message: 'user not found' })
+        response.status(404).json({ message: 'post not found' })
       } 
     })
     .catch(error => {
-      response.status(500).json({ message: 'error deleting the user'})
+      response.status(500).json({ message: 'error deleting the post'})
     })
 });
 
@@ -110,33 +109,62 @@ router.get("/:id/comments", (request, response) => {
 });
 
 // create a comment on a post
-router.post("/:id/comments", (request, response) => {
-  const { text } = request.body;
-  const id = request.params.id
+router.post('/:id/comments', (req,res)=>{
 
-  if (!text) {
-    response.status(400).send({
-      errorMessage: "Please provide text content for this comment."
-    });
-  } else {
-    db.findById(id)
-    .then(post => {
-      console.log(id)
-      console.log(request.body)
-      console.log(post)
-     db.insertComment(request.body)
-      .then(comment => {
-        response.status(201).json(comment)
-      })
-      .catch(error => {
-        response.status(500).json({ message: 'error creating new comment'})
-      })
-    })
-    .catch(error => {
-      response.status(404).json({ message: 'The post with the specified ID does not exist.' })
-    })
-  }
-});
+  console.log("Data recieved from Body", req.body);
+  const {text, post_id} = req.body;
+
+  // No name or bio in Body? That returns an error
+  !text || !post_id ? res.status(400).json({errorMessage: "Please provide text and post ID for the comment."}) :
+
+  db.insertComment(req.body)
+  .then(id => {
+      console.log("Success, Here is comment ID", id)
+      // res.status(201).json({ message: 'A new comment has been created '})
+      const passedID = id.id
+      console.log('heres a passedID', passedID)
+      db.findCommentById(passedID)
+          .then(response => {
+              res.status(200).json(response)
+              console.log('this hurr is the response', response)
+              console.log('right hurr be the id', id)
+          })
+          .catch(err => {
+              res.status(500).json({ error: "There was an error while saving the comment to the database" })
+          })
+  })
+  .catch( err => {
+    console.log(err)
+    res.status(404).json({ message: "we done goofed insertign a Comment" })
+  })
+})
+// router.post("/:id/comments", (request, response) => {
+//   const { text } = request.body;
+//   const id = request.params.id
+
+//   if (!text) {
+//     response.status(400).send({
+//       errorMessage: "Please provide text content for this comment."
+//     });
+//   } else {
+//     db.findById(id)
+//     .then(post => {
+//       console.log(id)
+//       console.log(request.body)
+//       console.log(post)
+//      db.insertComment(request.body)
+//       .then(comment => {
+//         response.status(201).json(comment)
+//       })
+//       .catch(error => {
+//         response.status(500).json({ message: 'error creating new comment'})
+//       })
+//     })
+//     .catch(error => {
+//       response.status(404).json({ message: 'The post with the specified ID does not exist.' })
+//     })
+//   }
+// });
 
 
 // export default router
